@@ -1,0 +1,75 @@
+# Local MongoDB plus a browser-based admin UI.
+#
+#   docker compose up -d              # database + admin UI
+#   docker compose up -d mongo        # database only
+#
+# A standalone server is enough: the backend is written so that no operation
+# needs a multi-document transaction (notification preferences are embedded in
+# the account, and cascade deletes are ordered children-first and retryable).
+# That also means it runs unchanged against a replica set or Atlas.
+services:
+  mongo:
+    image: mongo:8
+    container_name: cattery-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Browse the database at http://localhost:8082
+  mongo-express:
+    image: mongo-express:1.0.2-20-alpine3.19
+    container_name: cattery-mongo-express
+    restart: unless-stopped
+    ports:
+      # mongo-express listens on 8081, but so does Expo's Metro bundler — and
+      # the backend's CORS list already has http://localhost:8081 for it. Mapped
+      # to 8082 on the host so both can run at once.
+      - "8082:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017
+      # Show every database, not just the one the app uses.
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+      # Off by default: this binds to localhost only and holds development data.
+      # Set to "true" (and change the credentials) before exposing it anywhere.
+      ME_CONFIG_BASICAUTH_ENABLED: "false"
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: change-me
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  # Same UI, but pointed at a MongoDB running natively on the host rather than
+  # in a container — which is the case if you started it with
+  # backend/scripts/mongo-local.sh. Use this instead of the pair above; the
+  # `mongo` service would fail to bind 27017 while a native server holds it,
+  # and would show you an empty database rather than your existing data.
+  #
+  # Name the service explicitly. A bare `--profile host-mongo up` would also
+  # start the default services, and the two UIs would fight over port 8082:
+  #
+  #   docker compose --profile host-mongo up -d mongo-express-host
+  #
+  mongo-express-host:
+    profiles: ["host-mongo"]
+    image: mongo-express:1.0.2-20-alpine3.19
+    container_name: cattery-mongo-express-host
+    restart: unless-stopped
+    ports:
+      - "8082:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://host.docker.internal:27017
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+      ME_CONFIG_BASICAUTH_ENABLED: "false"
+    extra_hosts:
+      # Resolves host.docker.internal on Linux, where it is not automatic.
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  mongo-data:

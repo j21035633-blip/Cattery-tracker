@@ -1,0 +1,3 @@
+# No migration step: Beanie creates collections and indexes on startup.
+web: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+worker: python -m app.worker

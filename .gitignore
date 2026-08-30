@@ -1,0 +1,63 @@
+# Root ignores. Each project also has its own .gitignore, which applies to its
+# own subtree; this file covers the whole repo and anything left at the top.
+
+# --- Secrets and local config ---------------------------------------------
+# Every real .env is local-only. Committed examples are named .env.example and
+# are re-included below.
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Mobile signing / push credentials
+google-services.json
+GoogleService-Info.plist
+*.jks
+*.p8
+*.p12
+*.keystore
+*.mobileprovision
+
+# --- Dependencies and build output ----------------------------------------
+node_modules/
+.venv/
+venv/
+dist/
+build/
+.next/
+out/
+web-build/
+.expo/
+
+# --- Local databases and logs ---------------------------------------------
+# The dev MongoDB lives in ~/.local/mongodb-data by default, but guard against
+# a --dbpath pointed inside the repo.
+mongo-data/
+.mongo-data/
+*.log
+logs/
+
+# --- Caches ---------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.tsbuildinfo
+.eslintcache
+
+# --- Editors and OS -------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+*~
+# VS Code: keep shared settings, ignore per-developer state.
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# --- Scratch --------------------------------------------------------------
+tmp/
+scratch/
+*.local

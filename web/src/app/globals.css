@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  @apply bg-cream text-ink antialiased;
+}
+
+/* Tap targets stay comfortable on a tablet held in one hand. */
+@media (pointer: coarse) {
+  button,
+  a[role="button"],
+  select {
+    min-height: 44px;
+  }
+}
