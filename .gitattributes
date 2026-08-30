@@ -1,0 +1,46 @@
+# Line endings are decided here, not by each developer's core.autocrlf.
+#
+# Without this, what lands in a commit depends on the machine that made it: a
+# contributor with autocrlf=false on Windows commits CRLF, and a shell script
+# with CRLF fails on Linux with a "bad interpreter" error. Declaring it in the
+# repo makes the result the same everywhere.
+
+# Normalise every text file to LF in the repository, and check it out as LF.
+# Python, Node and VS Code all handle LF on Windows; the deploy targets are
+# Linux, so LF everywhere avoids a class of problem for no real cost.
+* text=auto eol=lf
+
+# --- Files that must keep a specific ending -------------------------------
+# Windows shells genuinely require CRLF.
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# Executed by a POSIX shell; CRLF here breaks the shebang.
+*.sh    text eol=lf
+Procfile text eol=lf
+
+# --- Binary: never diff, never munge line endings -------------------------
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.pdf   binary
+*.ttf   binary
+*.otf   binary
+*.woff  binary
+*.woff2 binary
+*.zip   binary
+*.jks   binary
+*.p8    binary
+*.p12   binary
+*.keystore binary
+
+# --- Generated files ------------------------------------------------------
+# Keep lockfiles in the repo, but out of diffs and language stats — they are
+# large, machine-written, and reviewing them line by line is noise.
+package-lock.json  -diff linguist-generated
+yarn.lock          -diff linguist-generated
+pnpm-lock.yaml     -diff linguist-generated
